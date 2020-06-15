@@ -1,72 +1,44 @@
-import React from 'react'
-import { createStackNavigator, StackNavigationProp } from "@react-navigation/stack"
-import { NavigationContainer, RouteProp } from "@react-navigation/native"
-import { View, Text, Button } from 'react-native'
+import React, { useState, useEffect, useContext } from 'react'
+import { NavigationContainer } from "@react-navigation/native"
+import { ActivityIndicator, AsyncStorage } from 'react-native'
 import { Center } from "./Center"
-import { AuthParamList, AuthNavProps } from './AuthParamList'
+import { AuthContext } from './AuthProvider'
+import { AppTabs } from './AppTabs'
+import { AuthStack } from './AuthStack'
 
 interface RoutesProps { }
 
-const Stack = createStackNavigator()
 
-function Login({
-    navigation,
-    route
-}: AuthNavProps<'Login'>) {
-    return (
-        <Center>
-            <Text>I am a {route.name} Screen</Text>
-            <Button
-                title="go to register"
-                onPress={() => {
-                    navigation.navigate('Register')
-                }} />
-        </Center>
-    );
-}
-
-function Register({
-    navigation,
-    route
-}: AuthNavProps<'Register'>) {
-    return (
-        <Center>
-            <Text>I am a :{route.name} Screen</Text>
-            <Button
-                title="go to login"
-                onPress={() => {
-                    navigation.navigate('Login')
-                }} />
-        </Center>
-    );
-}
 
 export const Routes: React.FC<RoutesProps> = ({ }) => {
+
+    const { user, login } = useContext(AuthContext);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Check if the user is logged in or not
+        AsyncStorage.getItem("user")
+            .then(userString => {
+                if (userString) {
+                    login()
+                }
+
+                setLoading(false)
+            })
+            .catch(err => {
+                setLoading(false);
+            })
+    }, []);
+
+    if (loading) {
+        <Center>
+            <ActivityIndicator size="large" />
+        </Center>
+    }
+
     return (
         <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{
-                    header: () => null
-                }}
-                initialRouteName="Login">
-
-                <Stack.Screen
-                    options={{
-                        headerTitle: "Sign In"
-                    }}
-                    name="Login"
-                    component={Login}
-                />
-
-                <Stack.Screen
-                    options={{
-                        headerTitle: "Sign Up"
-                    }}
-                    name="Register"
-                    component={Register}
-                />
-
-            </Stack.Navigator>
+            {user ? (<AppTabs />) : (<AuthStack />)}
         </NavigationContainer>
     );
 }

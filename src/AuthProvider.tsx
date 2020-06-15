@@ -25,9 +25,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 login: () => {
                     const fakeUser = { username: "bob" }
                     setUser(fakeUser);
-                    AsyncStorage.setItem(user, JSON.stringify(fakeUser));
+                    AsyncStorage.setItem("user", JSON.stringify(fakeUser));
                 },
                 logout: () => {
+                    setUser(null);
                     AsyncStorage.removeItem("user");
                 }
             }}
